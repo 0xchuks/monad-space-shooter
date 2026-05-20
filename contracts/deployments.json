@@ -3,5 +3,6 @@
   "chainId": 10143,
   "address": "0xe68407B99b39113bD4038A2Fad69053A7200f297",
   "authorizedSigner": "0x43f83Bf1fA9409c565f43A770Eae765A22884371",
-  "deployedAt": "2026-05-20T22:54:29.995Z"
+  "deployedAt": "2026-05-20T22:54:29.995Z",
+  "deploymentBlock": 33062470
 }
