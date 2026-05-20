@@ -1,6 +1,9 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+
+const GameCanvas = dynamic(() => import('./components/GameCanvas'), { ssr: false });
 
 export default function Home() {
   return (
@@ -26,7 +29,7 @@ export default function Home() {
           background: '#000',
         }}
       >
-        {/* game canvas goes here */}
+        <GameCanvas />
       </main>
     </>
   );

@@ -986,5 +986,11 @@
   "../../node_modules/.pnpm/viem@2.50.4_bufferutil@4.1.0_typescript@5.9.3_utf-8-validate@5.0.10_zod@3.25.76/node_modules/viem/_esm/utils/signature/recoverPublicKey.js -> @noble/curves/secp256k1": {
     "id": "../../node_modules/.pnpm/viem@2.50.4_bufferutil@4.1.0_typescript@5.9.3_utf-8-validate@5.0.10_zod@3.25.76/node_modules/viem/_esm/utils/signature/recoverPublicKey.js -> @noble/curves/secp256k1",
     "files": []
+  },
+  "app/page.tsx -> ./components/GameCanvas": {
+    "id": "app/page.tsx -> ./components/GameCanvas",
+    "files": [
+      "static/chunks/_app-pages-browser_app_components_GameCanvas_tsx.js"
+    ]
   }
 }
