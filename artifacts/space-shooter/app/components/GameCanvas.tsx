@@ -135,12 +135,16 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
   const { isSuccess: txConfirmed, isError: txFailed, error: txError } =
     useWaitForTransactionReceipt({ hash: txHash });
 
+  // Keep a stable ref so the effects below never need onScoreSubmitted as a dep.
+  const onScoreSubmittedRef = useRef(onScoreSubmitted);
+  useEffect(() => { onScoreSubmittedRef.current = onScoreSubmitted; }, [onScoreSubmitted]);
+
   useEffect(() => {
     if (txConfirmed) {
       setSubmitStatus('done');
-      onScoreSubmitted?.();
+      onScoreSubmittedRef.current?.();
     }
-  }, [txConfirmed, onScoreSubmitted]);
+  }, [txConfirmed]); // intentionally omit onScoreSubmitted — use ref above
 
   useEffect(() => {
     if (txFailed) {

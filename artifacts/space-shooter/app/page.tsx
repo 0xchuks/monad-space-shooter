@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const GameCanvas = dynamic(() => import('./components/GameCanvas'), { ssr: false });
@@ -9,6 +9,7 @@ const Leaderboard = dynamic(() => import('./components/Leaderboard'), { ssr: fal
 
 export default function Home() {
   const [leaderboardKey, setLeaderboardKey] = useState(0);
+  const handleScoreSubmitted = useCallback(() => setLeaderboardKey((k) => k + 1), []);
 
   return (
     <>
@@ -29,7 +30,7 @@ export default function Home() {
           gap: 0,
         }}
       >
-        <GameCanvas onScoreSubmitted={() => setLeaderboardKey((k) => k + 1)} />
+        <GameCanvas onScoreSubmitted={handleScoreSubmitted} />
         <Leaderboard refreshKey={leaderboardKey} />
       </main>
     </>
