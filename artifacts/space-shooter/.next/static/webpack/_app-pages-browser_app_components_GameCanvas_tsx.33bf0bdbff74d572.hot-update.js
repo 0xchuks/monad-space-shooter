@@ -7,7 +7,7 @@
  * or disable the default devtool with "devtool: false".
  * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
  */
-(self["webpackChunk_N_E"] = self["webpackChunk_N_E"] || []).push([["_app-pages-browser_app_components_GameCanvas_tsx"],{
+self["webpackHotUpdate_N_E"]("_app-pages-browser_app_components_GameCanvas_tsx",{
 
 /***/ "(app-pages-browser)/../../node_modules/.pnpm/@wagmi+core@2.22.1_@tanstack+query-core@5.100.9_@types+react@19.2.14_react@19.1.0_types_303b9a45400772b8f200ede76bea497d/node_modules/@wagmi/core/dist/esm/actions/waitForTransactionReceipt.js":
 /*!********************************************************************************************************************************************************************************************************************************!*\
@@ -119,4 +119,4 @@ eval(__webpack_require__.ts("__webpack_require__.r(__webpack_exports__);\n/* har
 
 /***/ })
 
-}]);
+});

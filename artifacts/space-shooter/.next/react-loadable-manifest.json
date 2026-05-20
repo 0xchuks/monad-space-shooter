@@ -992,5 +992,11 @@
     "files": [
       "static/chunks/_app-pages-browser_app_components_GameCanvas_tsx.js"
     ]
+  },
+  "app/page.tsx -> ./components/Leaderboard": {
+    "id": "app/page.tsx -> ./components/Leaderboard",
+    "files": [
+      "static/chunks/_app-pages-browser_app_components_Leaderboard_tsx.js"
+    ]
   }
 }
