@@ -1,10 +1,5 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import {
-  createPublicClient,
-  http,
-  parseAbiItem,
-  defineChain,
-} from "viem";
+import { createPublicClient, http, parseAbiItem, defineChain } from "viem";
 
 const router: IRouter = Router();
 
@@ -19,8 +14,11 @@ const CONTRACT_ADDRESS =
   (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`) ??
   "0xe68407B99b39113bD4038A2Fad69053A7200f297";
 
+// Contract was deployed at block 33062470; no NewBestScore events exist before this.
+// We paginate from here in 100-block chunks (Monad testnet getLogs range limit).
 const DEPLOYMENT_BLOCK = BigInt(33062470);
 const CHUNK = BigInt(100);
+const CACHE_TTL_MS = 5_000;
 
 const NEW_BEST_SCORE_EVENT = parseAbiItem(
   "event NewBestScore(address indexed player, uint256 score)"
@@ -31,41 +29,60 @@ const client = createPublicClient({
   transport: http(),
 });
 
-router.get("/leaderboard", async (_req: Request, res: Response) => {
-  try {
-    const latestBlock = await client.getBlockNumber();
+interface CacheEntry {
+  ts: number;
+  entries: { player: string; score: string }[];
+}
 
-    const scoreMap = new Map<string, bigint>();
+let cache: CacheEntry | null = null;
 
-    for (let from = DEPLOYMENT_BLOCK; from <= latestBlock; from += CHUNK) {
-      const to = from + CHUNK - BigInt(1) < latestBlock
+async function fetchLeaderboard(): Promise<{ player: string; score: string }[]> {
+  const now = Date.now();
+  if (cache && now - cache.ts < CACHE_TTL_MS) {
+    return cache.entries;
+  }
+
+  const latestBlock = await client.getBlockNumber();
+  const scoreMap = new Map<string, bigint>();
+
+  for (let from = DEPLOYMENT_BLOCK; from <= latestBlock; from += CHUNK) {
+    const to =
+      from + CHUNK - BigInt(1) <= latestBlock
         ? from + CHUNK - BigInt(1)
         : latestBlock;
 
-      const logs = await client.getLogs({
-        address: CONTRACT_ADDRESS,
-        event: NEW_BEST_SCORE_EVENT,
-        fromBlock: from,
-        toBlock: to,
-      });
+    const logs = await client.getLogs({
+      address: CONTRACT_ADDRESS,
+      event: NEW_BEST_SCORE_EVENT,
+      fromBlock: from,
+      toBlock: to,
+    });
 
-      for (const log of logs) {
-        const args = log.args as { player: `0x${string}`; score: bigint };
-        const existing = scoreMap.get(args.player) ?? BigInt(0);
-        if (args.score > existing) {
-          scoreMap.set(args.player, args.score);
-        }
+    for (const log of logs) {
+      const args = log.args as { player: `0x${string}`; score: bigint };
+      const existing = scoreMap.get(args.player) ?? BigInt(0);
+      if (args.score > existing) {
+        scoreMap.set(args.player, args.score);
       }
     }
+  }
 
-    const entries = Array.from(scoreMap.entries())
-      .map(([player, score]) => ({ player, score: score.toString() }))
-      .sort((a, b) => (BigInt(b.score) > BigInt(a.score) ? 1 : -1))
-      .slice(0, 10);
+  const entries = Array.from(scoreMap.entries())
+    .map(([player, score]) => ({ player, score: score.toString() }))
+    .sort((a, b) => (BigInt(b.score) > BigInt(a.score) ? 1 : -1))
+    .slice(0, 10);
 
+  cache = { ts: now, entries };
+  return entries;
+}
+
+router.get("/leaderboard", async (_req: Request, res: Response) => {
+  try {
+    const entries = await fetchLeaderboard();
     res.json({ entries });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Failed to fetch leaderboard";
+    const msg =
+      err instanceof Error ? err.message : "Failed to fetch leaderboard";
     res.status(500).json({ error: msg });
   }
 });
