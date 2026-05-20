@@ -1,0 +1,26 @@
+kind = "web"
+previewPath = "/"
+title = "Space Shooter"
+version = "1.0.0"
+id = "artifacts/space-shooter"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24826
+
+[services.development]
+run = "pnpm --filter @workspace/space-shooter run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/space-shooter", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/space-shooter/.next"
+
+[services.env]
+PORT = "24826"
