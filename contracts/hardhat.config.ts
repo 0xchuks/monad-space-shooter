@@ -1,5 +1,5 @@
 import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
+import "@nomicfoundation/hardhat-ethers";
 
 const SIGNER_PRIVATE_KEY = process.env.SIGNER_PRIVATE_KEY ?? "";
 
@@ -11,17 +11,17 @@ const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.27",
     settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
-      },
+      optimizer: { enabled: true, runs: 200 },
+      evmVersion: "cancun",
     },
   },
   networks: {
     monadTestnet: {
       url: "https://testnet-rpc.monad.xyz",
       chainId: 10143,
-      accounts: SIGNER_PRIVATE_KEY ? [`0x${SIGNER_PRIVATE_KEY.replace(/^0x/, "")}`] : [],
+      accounts: SIGNER_PRIVATE_KEY
+        ? [`0x${SIGNER_PRIVATE_KEY.replace(/^0x/, "")}`]
+        : [],
     },
   },
 };
