@@ -18,9 +18,19 @@ localPort = 24826
 run = "pnpm --filter @workspace/space-shooter run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/space-shooter", "run", "build" ]
-serve = "static"
-publicDir = "artifacts/space-shooter/.next"
+
+[services.production.build]
+args = ["pnpm", "--filter", "@workspace/space-shooter", "run", "build"]
+
+[services.production.run]
+args = ["pnpm", "--filter", "@workspace/space-shooter", "run", "start"]
+
+[services.production.run.env]
+PORT = "24826"
+NODE_ENV = "production"
+
+[services.production.health.startup]
+path = "/"
 
 [services.env]
 PORT = "24826"
