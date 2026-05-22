@@ -25,12 +25,43 @@ type Phase = 'idle' | 'playing' | 'over';
 type SubmitStatus = 'idle' | 'busy' | 'done' | 'error';
 
 interface Laser { id: number; x: number; y: number }
-interface Asteroid { id: number; x: number; y: number; r: number; pts: { x: number; y: number }[]; rot: number; rotSpeed: number }
+interface Faller {
+  id: number;
+  kind: 'asteroid' | 'creature';
+  x: number;
+  y: number;
+  r: number;
+  rot: number;
+  rotSpeed: number;
+  pts?: { x: number; y: number }[];
+  imageSrc?: string;
+  points: number;
+}
+
+const CREATURE_IMAGES = [
+  '/creatures/molandak.png',
+  '/creatures/moyaki.png',
+  '/creatures/chog.png',
+];
+const CREATURE_SPAWN_CHANCE = 0.5;
+const CREATURE_POINTS = 25;
+const ASTEROID_POINTS = 10;
+
+const imageCache = new Map<string, HTMLImageElement>();
+function preloadCreatureImages() {
+  if (typeof window === 'undefined') return;
+  for (const src of CREATURE_IMAGES) {
+    if (imageCache.has(src)) continue;
+    const img = new Image();
+    img.src = src;
+    imageCache.set(src, img);
+  }
+}
 
 let _id = 0;
 const nextId = () => ++_id;
 
-function makeAsteroid(_speed: number): Asteroid {
+function makeAsteroid(): Faller {
   const r = 18 + Math.random() * 22;
   const x = r + Math.random() * (W - 2 * r);
   const pts: { x: number; y: number }[] = [];
@@ -40,7 +71,28 @@ function makeAsteroid(_speed: number): Asteroid {
     const dist = r * (0.7 + Math.random() * 0.5);
     pts.push({ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist });
   }
-  return { id: nextId(), x, y: -r, r, pts, rot: Math.random() * Math.PI * 2, rotSpeed: (Math.random() - 0.5) * 0.04 };
+  return {
+    id: nextId(), kind: 'asteroid', x, y: -r, r, pts,
+    rot: Math.random() * Math.PI * 2,
+    rotSpeed: (Math.random() - 0.5) * 0.04,
+    points: ASTEROID_POINTS,
+  };
+}
+
+function makeCreature(): Faller {
+  const r = 24 + Math.random() * 18;
+  const x = r + Math.random() * (W - 2 * r);
+  const imageSrc = CREATURE_IMAGES[Math.floor(Math.random() * CREATURE_IMAGES.length)];
+  return {
+    id: nextId(), kind: 'creature', x, y: -r, r, imageSrc,
+    rot: (Math.random() - 0.5) * 0.3,
+    rotSpeed: (Math.random() - 0.5) * 0.02,
+    points: CREATURE_POINTS,
+  };
+}
+
+function spawnFaller(): Faller {
+  return Math.random() < CREATURE_SPAWN_CHANCE ? makeCreature() : makeAsteroid();
 }
 
 function drawLaser(ctx: CanvasRenderingContext2D, x: number, y: number, ship: ShipDef) {
@@ -52,19 +104,34 @@ function drawLaser(ctx: CanvasRenderingContext2D, x: number, y: number, ship: Sh
   ctx.restore();
 }
 
-function drawAsteroid(ctx: CanvasRenderingContext2D, a: Asteroid) {
+function drawFaller(ctx: CanvasRenderingContext2D, a: Faller) {
   ctx.save();
   ctx.translate(a.x, a.y);
   ctx.rotate(a.rot);
-  ctx.beginPath();
-  ctx.moveTo(a.pts[0].x, a.pts[0].y);
-  for (let i = 1; i < a.pts.length; i++) ctx.lineTo(a.pts[i].x, a.pts[i].y);
-  ctx.closePath();
-  ctx.fillStyle = '#665544';
-  ctx.fill();
-  ctx.strokeStyle = '#998866';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
+  if (a.kind === 'creature' && a.imageSrc) {
+    const img = imageCache.get(a.imageSrc);
+    const size = a.r * 2.2;
+    if (img && img.complete && img.naturalWidth > 0) {
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = '#a06bff';
+      ctx.drawImage(img, -size / 2, -size / 2, size, size);
+    } else {
+      ctx.fillStyle = '#a06bff';
+      ctx.beginPath();
+      ctx.arc(0, 0, a.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (a.pts) {
+    ctx.beginPath();
+    ctx.moveTo(a.pts[0].x, a.pts[0].y);
+    for (let i = 1; i < a.pts.length; i++) ctx.lineTo(a.pts[i].x, a.pts[i].y);
+    ctx.closePath();
+    ctx.fillStyle = '#665544';
+    ctx.fill();
+    ctx.strokeStyle = '#998866';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
@@ -107,7 +174,7 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
 
   const playerRef = useRef({ x: W / 2, y: H - 60 });
   const lasersRef = useRef<Laser[]>([]);
-  const asteroidsRef = useRef<Asteroid[]>([]);
+  const asteroidsRef = useRef<Faller[]>([]);
   const scoreRef = useRef(0);
   const keysRef = useRef<Record<string, boolean>>({});
   const rafRef = useRef<number>(0);
@@ -179,13 +246,14 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
     }
   }, [address, isConnected, submitStatus, finalScore, writeContractAsync]);
 
-  // Stars init
+  // Stars init + creature image preload
   useEffect(() => {
     starsRef.current = Array.from({ length: 80 }, () => ({
       x: Math.random() * W,
       y: Math.random() * H,
       s: Math.random() < 0.2 ? 2 : 1,
     }));
+    preloadCreatureImages();
   }, []);
 
   const endGame = useCallback(() => {
@@ -232,7 +300,7 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
 
       if (spawnAccRef.current >= SPAWN_INTERVAL_MS) {
         spawnAccRef.current -= SPAWN_INTERVAL_MS;
-        asteroidsRef.current.push(makeAsteroid(speed));
+        asteroidsRef.current.push(spawnFaller());
       }
 
       lasersRef.current = lasersRef.current
@@ -252,7 +320,7 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
           if (Math.sqrt(dx * dx + dy * dy) < a.r) {
             hitLaserIds.add(l.id);
             hitAsteroidIds.add(a.id);
-            scoreRef.current += 10;
+            scoreRef.current += a.points;
           }
         }
       }
@@ -271,7 +339,7 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
       ctx.fillRect(0, 0, W, H);
       drawStars(ctx, starsRef.current);
       for (const l of lasersRef.current) drawLaser(ctx, l.x, l.y, shipRef.current);
-      for (const a of asteroidsRef.current) drawAsteroid(ctx, a);
+      for (const a of asteroidsRef.current) drawFaller(ctx, a);
       shipRef.current.drawShip(ctx, p.x, p.y);
       ctx.save();
       ctx.shadowBlur = 10;
