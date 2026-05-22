@@ -80,13 +80,13 @@ function makeAsteroid(): Faller {
 }
 
 function makeCreature(): Faller {
-  const r = 24 + Math.random() * 18;
+  const r = 28 + Math.random() * 14;
   const x = r + Math.random() * (W - 2 * r);
   const imageSrc = CREATURE_IMAGES[Math.floor(Math.random() * CREATURE_IMAGES.length)];
   return {
     id: nextId(), kind: 'creature', x, y: -r, r, imageSrc,
-    rot: (Math.random() - 0.5) * 0.3,
-    rotSpeed: (Math.random() - 0.5) * 0.02,
+    rot: 0,
+    rotSpeed: 0,
     points: CREATURE_POINTS,
   };
 }
@@ -112,14 +112,7 @@ function drawFaller(ctx: CanvasRenderingContext2D, a: Faller) {
     const img = imageCache.get(a.imageSrc);
     const size = a.r * 2.2;
     if (img && img.complete && img.naturalWidth > 0) {
-      ctx.shadowBlur = 16;
-      ctx.shadowColor = '#a06bff';
       ctx.drawImage(img, -size / 2, -size / 2, size, size);
-    } else {
-      ctx.fillStyle = '#a06bff';
-      ctx.beginPath();
-      ctx.arc(0, 0, a.r, 0, Math.PI * 2);
-      ctx.fill();
     }
   } else if (a.pts) {
     ctx.beginPath();
