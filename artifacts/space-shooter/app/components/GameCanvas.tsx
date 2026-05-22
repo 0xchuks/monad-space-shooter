@@ -322,7 +322,6 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
     ctx.fillStyle = '#02000a';
     ctx.fillRect(0, 0, W, H);
     drawStars(ctx, starsRef.current);
-    ship.drawShip(ctx, W / 2, H - 60);
 
     ctx.save();
     ctx.textAlign = 'center';
@@ -330,16 +329,19 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
     ctx.shadowBlur = 24;
     ctx.shadowColor = '#ff00ff';
     ctx.fillStyle = '#fff';
-    ctx.fillText('SPACE', W / 2, H / 2 - 80);
-    ctx.fillText('SHOOTER', W / 2, H / 2 - 10);
+    ctx.fillText('SPACE', W / 2, 140);
+    ctx.fillText('SHOOTER', W / 2, 210);
 
     ctx.shadowBlur = 14;
     ctx.shadowColor = '#0ff';
     ctx.fillStyle = '#0ff';
     ctx.font = "14px 'Press Start 2P', monospace";
-    ctx.fillText('PRESS SPACE TO START', W / 2, H / 2 + 60);
+    ctx.fillText('PRESS SPACE TO START', W / 2, 290);
     ctx.restore();
     ctx.textAlign = 'left';
+
+    // Preview the selected ship in the middle, well above the picker
+    ship.drawShip(ctx, W / 2, 380);
   }, [phase, ship]);
 
   useEffect(() => {
