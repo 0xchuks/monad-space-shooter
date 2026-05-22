@@ -1,3 +1,124 @@
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ../../node_modules/.pnpm/next@15.5.18_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.18_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@500;600;700&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+  width: 100%;
+  background: #0a0014;
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  overflow-x: hidden;
+}
+
+.font-arcade {
+  font-family: 'Press Start 2P', cursive;
+}
+
+.neon-title {
+  color: #fff;
+  text-shadow:
+    0 0 5px #fff,
+    0 0 10px #fff,
+    0 0 20px #ff00ff,
+    0 0 40px #ff00ff,
+    0 0 80px #ff00ff,
+    0 0 100px #ff00ff;
+  animation: neon-flicker 1.5s infinite alternate;
+}
+
+.neon-border {
+  box-shadow: 0 0 25px #0ff, inset 0 0 15px rgba(0, 255, 255, 0.4);
+  border: 3px solid #0ff;
+  border-radius: 8px;
+}
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.18) 50%,
+    rgba(0, 0, 0, 0.18)
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 50;
+  mix-blend-mode: overlay;
+  opacity: 0.35;
+}
+
+@keyframes neon-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow:
+      0 0 5px #fff,
+      0 0 10px #fff,
+      0 0 20px #ff00ff,
+      0 0 40px #ff00ff,
+      0 0 80px #ff00ff,
+      0 0 100px #ff00ff;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+  }
+}
+
+.pulse-text {
+  animation: neon-pulse 1s infinite alternate;
+}
+
+@keyframes neon-pulse {
+  from { opacity: 0.5; text-shadow: 0 0 5px #0ff; }
+  to   { opacity: 1;   text-shadow: 0 0 20px #0ff, 0 0 30px #0ff; }
+}
+
+.neon-btn {
+  padding: 12px 24px;
+  background: rgba(17, 0, 34, 0.85);
+  -webkit-backdrop-filter: blur(6px);
+          backdrop-filter: blur(6px);
+  border: 2px solid #ff00ff;
+  color: #ff00ff;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  box-shadow: 0 0 15px #ff00ff, inset 0 0 10px rgba(255, 0, 255, 0.4);
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+.neon-btn:hover {
+  background: rgba(255, 0, 255, 0.15);
+  transform: scale(1.05);
+}
+.neon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.neon-btn-cyan {
+  border-color: #0ff;
+  color: #0ff;
+  box-shadow: 0 0 15px #0ff, inset 0 0 10px rgba(0, 255, 255, 0.4);
+}
+.neon-btn-cyan:hover {
+  background: rgba(0, 255, 255, 0.15);
+}
+
 /*!****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ../../node_modules/.pnpm/next@15.5.18_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.18_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!../../node_modules/.pnpm/@rainbow-me+rainbowkit@2.2.11_@tanstack+react-query@5.100.9_react@19.1.0__@types+react@_002579bdf34625d735c9d308b1d3d46d/node_modules/@rainbow-me/rainbowkit/dist/index.css ***!
   \****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
@@ -2184,26 +2305,5 @@
 [data-rk] ._1y2lnfi1 {
   max-width: -moz-fit-content;
   max-width: fit-content;
-}
-
-/*!*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ../../node_modules/.pnpm/next@15.5.18_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!../../node_modules/.pnpm/next@15.5.18_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/globals.css ***!
-  \*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html,
-body {
-  min-height: 100%;
-  width: 100%;
-  background: #000;
-  color: #fff;
-  font-family: 'Courier New', Courier, monospace;
-  overflow-x: hidden;
 }
 

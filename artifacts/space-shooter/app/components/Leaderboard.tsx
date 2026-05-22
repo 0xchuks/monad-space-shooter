@@ -33,35 +33,44 @@ export default function Leaderboard({ refreshKey }: { refreshKey: number }) {
       });
   }, [refreshKey]);
 
-  const mono: React.CSSProperties = { fontFamily: "'Courier New', monospace" };
+  const panel: React.CSSProperties = {
+    width: 800,
+    padding: '28px 32px 32px',
+    background: 'rgba(17, 0, 34, 0.85)',
+    backdropFilter: 'blur(8px)',
+    border: '2px solid #ff00ff',
+    borderRadius: 14,
+    boxShadow: '0 0 30px rgba(255, 0, 255, 0.25), inset 0 0 20px rgba(255, 0, 255, 0.08)',
+  };
+
+  const heading: React.CSSProperties = {
+    fontFamily: "'Press Start 2P', cursive",
+    fontSize: 18,
+    textAlign: 'center',
+    color: '#ff00ff',
+    textShadow: '0 0 10px #ff00ff, 0 0 20px #ff00ff',
+    letterSpacing: '0.2em',
+    marginBottom: 22,
+  };
+
+  const message: React.CSSProperties = {
+    fontFamily: "'Press Start 2P', cursive",
+    fontSize: 10,
+    textAlign: 'center',
+    letterSpacing: '0.1em',
+    padding: '12px 0',
+  };
 
   return (
-    <div style={{ width: 800, padding: '24px 0 48px', ...mono }}>
-      <p
-        style={{
-          fontSize: 12,
-          letterSpacing: '0.18em',
-          color: '#444',
-          textTransform: 'uppercase',
-          marginBottom: 12,
-          textAlign: 'center',
-        }}
-      >
-        — Top 10 —
-      </p>
+    <div style={panel}>
+      <h2 style={heading}>— TOP 10 —</h2>
 
-      {loading && (
-        <p style={{ color: '#555', fontSize: 13, textAlign: 'center' }}>Loading…</p>
-      )}
+      {loading && <p style={{ ...message, color: '#0ff' }}>LOADING…</p>}
 
-      {error && (
-        <p style={{ color: '#884444', fontSize: 13, textAlign: 'center' }}>{error}</p>
-      )}
+      {error && <p style={{ ...message, color: '#ff6b9d' }}>{error}</p>}
 
       {!loading && !error && entries.length === 0 && (
-        <p style={{ color: '#444', fontSize: 13, textAlign: 'center' }}>
-          No scores yet. Be the first!
-        </p>
+        <p style={{ ...message, color: '#888' }}>NO SCORES YET. BE THE FIRST!</p>
       )}
 
       {!loading && !error && entries.length > 0 && (
@@ -72,7 +81,9 @@ export default function Leaderboard({ refreshKey }: { refreshKey: number }) {
             padding: 0,
             display: 'flex',
             flexDirection: 'column',
-            gap: 6,
+            gap: 2,
+            fontFamily: "'Press Start 2P', cursive",
+            fontSize: 11,
           }}
         >
           {entries.map((e, i) => (
@@ -80,19 +91,43 @@ export default function Leaderboard({ refreshKey }: { refreshKey: number }) {
               key={e.player}
               style={{
                 display: 'flex',
-                alignItems: 'baseline',
-                gap: 8,
-                fontSize: 14,
-                color: i === 0 ? '#ffd700' : i < 3 ? '#bbb' : '#555',
-                borderTop: i === 0 ? 'none' : '1px solid #111',
-                paddingTop: i === 0 ? 0 : 6,
+                alignItems: 'center',
+                gap: 16,
+                padding: '14px 12px',
+                borderBottom: '1px solid rgba(255, 0, 255, 0.25)',
               }}
             >
-              <span style={{ width: 20, textAlign: 'right', flexShrink: 0 }}>
+              <span
+                style={{
+                  width: 36,
+                  textAlign: 'right',
+                  color: '#ffff00',
+                  textShadow: '0 0 8px #ffff00',
+                  fontSize: 13,
+                }}
+              >
                 {i + 1}.
               </span>
-              <span style={{ flex: 1 }}>{truncate(e.player)}</span>
-              <span>{Number(e.score).toLocaleString()}</span>
+              <span
+                style={{
+                  flex: 1,
+                  color: '#0ff',
+                  textShadow: '0 0 5px #0ff',
+                  letterSpacing: '0.1em',
+                }}
+              >
+                {truncate(e.player)}
+              </span>
+              <span
+                style={{
+                  color: '#fff',
+                  textShadow: '0 0 8px #fff',
+                  letterSpacing: '0.05em',
+                  fontSize: 13,
+                }}
+              >
+                {Number(e.score).toLocaleString()}
+              </span>
             </li>
           ))}
         </ol>

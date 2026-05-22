@@ -71,9 +71,9 @@ function drawShip(ctx: CanvasRenderingContext2D, x: number, y: number) {
 
 function drawLaser(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.save();
-  ctx.shadowBlur = 10;
-  ctx.shadowColor = '#00ffff';
-  ctx.fillStyle = '#00ffff';
+  ctx.shadowBlur = 14;
+  ctx.shadowColor = '#ff00ff';
+  ctx.fillStyle = '#ff66ff';
   ctx.fillRect(x - LASER_W / 2, y, LASER_W, LASER_H);
   ctx.restore();
 }
@@ -275,15 +275,19 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
       asteroidsRef.current = asteroidsRef.current.filter((a) => a.y - a.r <= H);
 
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = '#000';
+      ctx.fillStyle = '#02000a';
       ctx.fillRect(0, 0, W, H);
       drawStars(ctx, starsRef.current);
       for (const l of lasersRef.current) drawLaser(ctx, l.x, l.y);
       for (const a of asteroidsRef.current) drawAsteroid(ctx, a);
       drawShip(ctx, p.x, p.y);
-      ctx.fillStyle = '#fff';
-      ctx.font = "16px 'Courier New', monospace";
-      ctx.fillText(`SCORE  ${scoreRef.current}`, 16, 28);
+      ctx.save();
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = '#0ff';
+      ctx.fillStyle = '#0ff';
+      ctx.font = "14px 'Press Start 2P', monospace";
+      ctx.fillText(`SCORE ${scoreRef.current}`, 18, 32);
+      ctx.restore();
 
       rafRef.current = requestAnimationFrame(loop);
     },
@@ -323,17 +327,26 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = '#02000a';
     ctx.fillRect(0, 0, W, H);
     drawStars(ctx, starsRef.current);
     drawShip(ctx, W / 2, H - 60);
-    ctx.fillStyle = '#fff';
-    ctx.font = "bold 28px 'Courier New', monospace";
+
+    ctx.save();
     ctx.textAlign = 'center';
-    ctx.fillText('SPACE  SHOOTER', W / 2, H / 2 - 30);
-    ctx.font = "16px 'Courier New', monospace";
-    ctx.fillStyle = '#aaa';
-    ctx.fillText('Press  SPACE  to  start', W / 2, H / 2 + 10);
+    ctx.font = "bold 48px 'Press Start 2P', monospace";
+    ctx.shadowBlur = 24;
+    ctx.shadowColor = '#ff00ff';
+    ctx.fillStyle = '#fff';
+    ctx.fillText('SPACE', W / 2, H / 2 - 60);
+    ctx.fillText('SHOOTER', W / 2, H / 2 + 10);
+
+    ctx.shadowBlur = 14;
+    ctx.shadowColor = '#0ff';
+    ctx.fillStyle = '#0ff';
+    ctx.font = "16px 'Press Start 2P', monospace";
+    ctx.fillText('PRESS SPACE TO START', W / 2, H / 2 + 90);
+    ctx.restore();
     ctx.textAlign = 'left';
   }, [phase]);
 
@@ -343,82 +356,88 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    ctx.fillStyle = 'rgba(0,0,0,0.72)';
+    ctx.fillStyle = 'rgba(10, 0, 20, 0.78)';
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = '#ff4444';
-    ctx.font = "bold 36px 'Courier New', monospace";
+
+    ctx.save();
     ctx.textAlign = 'center';
-    ctx.fillText('GAME  OVER', W / 2, H / 2 - 40);
+    ctx.font = "bold 40px 'Press Start 2P', monospace";
+    ctx.shadowBlur = 24;
+    ctx.shadowColor = '#ff00ff';
+    ctx.fillStyle = '#ff3399';
+    ctx.fillText('GAME OVER', W / 2, H / 2 - 60);
+
+    ctx.shadowBlur = 14;
+    ctx.shadowColor = '#0ff';
     ctx.fillStyle = '#fff';
-    ctx.font = "22px 'Courier New', monospace";
-    ctx.fillText(`Score:  ${finalScore}`, W / 2, H / 2 + 4);
-    ctx.font = "14px 'Courier New', monospace";
-    ctx.fillStyle = '#888';
-    ctx.fillText('Press  SPACE  to  play  again', W / 2, H / 2 + 38);
+    ctx.font = "20px 'Press Start 2P', monospace";
+    ctx.fillText(`SCORE ${finalScore}`, W / 2, H / 2 - 10);
+
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#0ff';
+    ctx.fillStyle = '#0ff';
+    ctx.font = "12px 'Press Start 2P', monospace";
+    ctx.fillText('PRESS SPACE TO PLAY AGAIN', W / 2, H / 2 + 30);
+    ctx.restore();
     ctx.textAlign = 'left';
   }, [phase, finalScore]);
-
-  const mono = { fontFamily: "'Courier New', monospace" } as const;
-
-  const btnStyle = (active: boolean): React.CSSProperties => ({
-    marginTop: 8,
-    padding: '10px 28px',
-    background: active ? '#0e76fd' : '#222',
-    color: active ? '#fff' : '#555',
-    border: 'none',
-    borderRadius: 8,
-    fontSize: 14,
-    cursor: active ? 'pointer' : 'not-allowed',
-    letterSpacing: '0.05em',
-    ...mono,
-  });
 
   const canSubmit = isConnected && submitStatus !== 'busy' && submitStatus !== 'done';
 
   return (
-    <div style={{ position: 'relative', width: W, height: H }}>
-      <canvas ref={canvasRef} width={W} height={H} style={{ display: 'block', background: '#000' }} />
+    <div className="neon-border" style={{ position: 'relative', width: W, height: H, background: '#02000a', overflow: 'hidden' }}>
+      <canvas ref={canvasRef} width={W} height={H} style={{ display: 'block' }} />
 
       {phase === 'over' && (
         <div
           style={{
             position: 'absolute',
-            top: '58%',
+            top: '62%',
             left: '50%',
             transform: 'translateX(-50%)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 8,
+            gap: 10,
           }}
         >
           {submitStatus === 'done' ? (
-            <span style={{ color: '#00e87a', fontSize: 15, letterSpacing: '0.08em', ...mono }}>
-              ✓ Submitted!
+            <span
+              style={{
+                color: '#00ff88',
+                fontSize: 12,
+                fontFamily: "'Press Start 2P', monospace",
+                letterSpacing: '0.12em',
+                textShadow: '0 0 10px #00ff88',
+              }}
+            >
+              ✓ SUBMITTED!
             </span>
           ) : (
             <button
               disabled={!canSubmit}
-              style={btnStyle(canSubmit)}
+              className="neon-btn neon-btn-cyan"
               onClick={handleSubmit}
             >
               {submitStatus === 'busy'
                 ? 'Submitting…'
                 : isConnected
-                ? 'Submit to leaderboard'
-                : 'Connect wallet to submit'}
+                ? 'Submit Score'
+                : 'Connect Wallet'}
             </button>
           )}
 
           {submitStatus === 'error' && submitError && (
             <div
               style={{
-                color: '#ff6666',
-                fontSize: 12,
-                maxWidth: 340,
+                color: '#ff6b9d',
+                fontSize: 11,
+                maxWidth: 360,
                 textAlign: 'center',
-                lineHeight: 1.5,
-                ...mono,
+                lineHeight: 1.6,
+                fontFamily: "'Rajdhani', sans-serif",
+                textShadow: '0 0 6px #ff6b9d',
+                padding: '0 12px',
               }}
             >
               {submitError}
