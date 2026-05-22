@@ -3,6 +3,9 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { leaderboardAbi } from '../lib/leaderboard-abi';
+import { SHIPS, DEFAULT_SHIP_ID, getShip, type ShipDef } from '../lib/ships';
+
+const SHIP_STORAGE_KEY = 'spaceShooter.shipId';
 
 const W = 800;
 const H = 600;
@@ -40,40 +43,11 @@ function makeAsteroid(_speed: number): Asteroid {
   return { id: nextId(), x, y: -r, r, pts, rot: Math.random() * Math.PI * 2, rotSpeed: (Math.random() - 0.5) * 0.04 };
 }
 
-function drawShip(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  ctx.save();
-  ctx.translate(x, y);
-  const grd = ctx.createRadialGradient(0, 14, 1, 0, 14, 14);
-  grd.addColorStop(0, 'rgba(80,160,255,0.9)');
-  grd.addColorStop(1, 'rgba(80,160,255,0)');
-  ctx.fillStyle = grd;
-  ctx.beginPath();
-  ctx.ellipse(0, 14, 10, 14, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(0, -PLAYER_H / 2);
-  ctx.lineTo(PLAYER_W / 2, PLAYER_H / 2);
-  ctx.lineTo(PLAYER_W / 4, PLAYER_H / 3);
-  ctx.lineTo(-PLAYER_W / 4, PLAYER_H / 3);
-  ctx.lineTo(-PLAYER_W / 2, PLAYER_H / 2);
-  ctx.closePath();
-  ctx.fillStyle = '#b8d4ff';
-  ctx.fill();
-  ctx.strokeStyle = '#5599ff';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.ellipse(0, -2, 7, 9, 0, 0, Math.PI * 2);
-  ctx.fillStyle = '#1a3a7a';
-  ctx.fill();
-  ctx.restore();
-}
-
-function drawLaser(ctx: CanvasRenderingContext2D, x: number, y: number) {
+function drawLaser(ctx: CanvasRenderingContext2D, x: number, y: number, ship: ShipDef) {
   ctx.save();
   ctx.shadowBlur = 14;
-  ctx.shadowColor = '#ff00ff';
-  ctx.fillStyle = '#ff66ff';
+  ctx.shadowColor = ship.laserColor;
+  ctx.fillStyle = ship.laserFill;
   ctx.fillRect(x - LASER_W / 2, y, LASER_W, LASER_H);
   ctx.restore();
 }
@@ -112,6 +86,24 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
   const phaseRef = useRef<Phase>('idle');
   const [phase, setPhase] = useState<Phase>('idle');
   const [finalScore, setFinalScore] = useState(0);
+
+  const [shipId, setShipId] = useState<string>(DEFAULT_SHIP_ID);
+  const ship = getShip(shipId);
+  const shipRef = useRef<ShipDef>(ship);
+  useEffect(() => { shipRef.current = ship; }, [ship]);
+
+  // Hydrate ship choice from localStorage on mount.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(SHIP_STORAGE_KEY);
+      if (saved && SHIPS.some((s) => s.id === saved)) setShipId(saved);
+    } catch { /* localStorage unavailable */ }
+  }, []);
+
+  const selectShip = useCallback((id: string) => {
+    setShipId(id);
+    try { localStorage.setItem(SHIP_STORAGE_KEY, id); } catch { /* ignore */ }
+  }, []);
 
   const playerRef = useRef({ x: W / 2, y: H - 60 });
   const lasersRef = useRef<Laser[]>([]);
@@ -278,9 +270,9 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
       ctx.fillStyle = '#02000a';
       ctx.fillRect(0, 0, W, H);
       drawStars(ctx, starsRef.current);
-      for (const l of lasersRef.current) drawLaser(ctx, l.x, l.y);
+      for (const l of lasersRef.current) drawLaser(ctx, l.x, l.y, shipRef.current);
       for (const a of asteroidsRef.current) drawAsteroid(ctx, a);
-      drawShip(ctx, p.x, p.y);
+      shipRef.current.drawShip(ctx, p.x, p.y);
       ctx.save();
       ctx.shadowBlur = 10;
       ctx.shadowColor = '#0ff';
@@ -330,7 +322,7 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
     ctx.fillStyle = '#02000a';
     ctx.fillRect(0, 0, W, H);
     drawStars(ctx, starsRef.current);
-    drawShip(ctx, W / 2, H - 60);
+    ship.drawShip(ctx, W / 2, H - 60);
 
     ctx.save();
     ctx.textAlign = 'center';
@@ -338,17 +330,17 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
     ctx.shadowBlur = 24;
     ctx.shadowColor = '#ff00ff';
     ctx.fillStyle = '#fff';
-    ctx.fillText('SPACE', W / 2, H / 2 - 60);
-    ctx.fillText('SHOOTER', W / 2, H / 2 + 10);
+    ctx.fillText('SPACE', W / 2, H / 2 - 80);
+    ctx.fillText('SHOOTER', W / 2, H / 2 - 10);
 
     ctx.shadowBlur = 14;
     ctx.shadowColor = '#0ff';
     ctx.fillStyle = '#0ff';
-    ctx.font = "16px 'Press Start 2P', monospace";
-    ctx.fillText('PRESS SPACE TO START', W / 2, H / 2 + 90);
+    ctx.font = "14px 'Press Start 2P', monospace";
+    ctx.fillText('PRESS SPACE TO START', W / 2, H / 2 + 60);
     ctx.restore();
     ctx.textAlign = 'left';
-  }, [phase]);
+  }, [phase, ship]);
 
   useEffect(() => {
     if (phase !== 'over') return;
@@ -387,6 +379,64 @@ export default function GameCanvas({ onScoreSubmitted }: Props) {
   return (
     <div className="neon-border" style={{ position: 'relative', width: W, height: H, background: '#02000a', overflow: 'hidden' }}>
       <canvas ref={canvasRef} width={W} height={H} style={{ display: 'block' }} />
+
+      {phase === 'idle' && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 16,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 8,
+            pointerEvents: 'none',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "'Press Start 2P', monospace",
+              fontSize: 9,
+              letterSpacing: '0.2em',
+              color: '#ff00ff',
+              textShadow: '0 0 8px #ff00ff',
+            }}
+          >
+            SELECT SHIP
+          </span>
+          <div style={{ display: 'flex', gap: 10, pointerEvents: 'auto' }}>
+            {SHIPS.map((s) => {
+              const selected = s.id === shipId;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => selectShip(s.id)}
+                  style={{
+                    padding: '8px 14px',
+                    background: selected ? `${s.accent}26` : 'rgba(17, 0, 34, 0.7)',
+                    border: `2px solid ${selected ? s.accent : 'rgba(255,255,255,0.15)'}`,
+                    borderRadius: 8,
+                    color: selected ? s.accent : '#888',
+                    fontFamily: "'Press Start 2P', monospace",
+                    fontSize: 9,
+                    letterSpacing: '0.1em',
+                    cursor: 'pointer',
+                    boxShadow: selected ? `0 0 12px ${s.accent}, inset 0 0 8px ${s.accent}55` : 'none',
+                    transition: 'all 0.15s',
+                    textShadow: selected ? `0 0 6px ${s.accent}` : 'none',
+                    minWidth: 90,
+                  }}
+                >
+                  <div>{s.name}</div>
+                  <div style={{ fontSize: 7, marginTop: 4, opacity: 0.85 }}>{s.tagline}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {phase === 'over' && (
         <div
